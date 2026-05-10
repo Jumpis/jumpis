@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>jumpis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(18% 0.008 80);
+    --bg-2: oklch(22% 0.010 80);
+    --bg-3: oklch(26% 0.012 80);
+    --line: oklch(32% 0.012 80);
+    --line-2: oklch(38% 0.014 80);
+    --fg: oklch(96% 0.006 80);
+    --fg-dim: oklch(72% 0.010 80);
+    --fg-muted: oklch(54% 0.012 80);
+    --accent: oklch(78% 0.16 75);
+    --accent-2: oklch(72% 0.14 200);
+    --danger: oklch(70% 0.16 28);
+    --good: oklch(76% 0.14 155);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "ss01","cv11";
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: "calt", "ss02"; }
+
+  /* ---- layout shell ---- */
+  .shell { max-width: 1280px; margin: 0 auto; padding: 0 48px; }
+  @media (max-width: 720px) { .shell { padding: 0 24px; } }
+
+  /* ---- top nav ---- */
+  .nav {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(14px);
+    background: color-mix(in oklab, var(--bg) 78%, transparent);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 600; letter-spacing: -0.01em; }
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: conic-gradient(from 220deg, var(--accent), var(--accent-2), var(--accent));
+    position: relative;
+  }
+  .brand-mark::after {
+    content: ""; position: absolute; inset: 6px; border-radius: 4px;
+    background: var(--bg);
+  }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a {
+    color: var(--fg-dim); text-decoration: none; font-size: 14px;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--fg); }
+  .nav-cta {
+    padding: 8px 14px; border-radius: 8px;
+    background: var(--fg); color: var(--bg);
+    font-size: 13px; font-weight: 600;
+    border: 0; cursor: pointer;
+    text-decoration: none;
+    transition: transform .15s;
+  }
+  .nav-cta:hover { transform: translateY(-1px); }
+  @media (max-width: 720px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+  /* ---- hero v3: question-led ---- */
+  .hero-q{
+    font-family:'Instrument Serif', serif; font-style: italic;
+    font-size: clamp(30px, 3.8vw, 50px);
+    line-height: 1.12; letter-spacing: -0.015em; font-weight: 400;
+    margin: 0; color: var(--fg);
+    word-break: keep-all; text-wrap: pretty;
+  }
+  .hero-q .strike{
+    color: var(--fg-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--line-2);
+  }
+  .hero-a{
+    margin-top: 36px; padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: 80px 1fr; gap: 24px; align-items: start;
+  }
+  @media (max-width: 640px){ .hero-a{ grid-template-columns: 1fr; gap: 12px; } }
+  .hero-a-label{
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase;
+    padding-top: 6px;
+  }
+  .hero-a-body{ font-size: 17px; color: var(--fg-dim); max-width: 56ch; text-wrap: pretty; }
+  .hero-a-body strong{ color: var(--fg); font-weight: 500; }
+
+  /* ---- hero ---- */
+  .hero { padding: 96px 0 64px; position: relative; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 64px;
+    align-items: center;
+  }
+  @media (max-width: 960px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--fg-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--good) 25%, transparent);
+    animation: pulse 2s infinite ease-in-out;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  h1.headline {
+    margin: 24px 0 24px;
+    font-size: clamp(40px, 6.4vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  .headline .accent { color: var(--accent); font-style: italic; font-weight: 500; }
+  .headline .line2 { color: var(--fg-dim); font-weight: 400; }
+
+  .lede {
+    font-size: 18px; color: var(--fg-dim); max-width: 56ch;
+    text-wrap: pretty;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 40px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat { padding: 20px 0; }
+  .stat + .stat { border-left: 1px solid var(--line); padding-left: 20px; }
+  .stat-num { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; }
+  .stat-label { font-size: 12px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+  /* ---- terminal card ---- */
+  .term {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6);
+  }
+  .term-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-3);
+  }
+  .term-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--line-2); }
+  .term-title {
+    margin-left: 12px; font-size: 12px; color: var(--fg-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .term-body {
+    padding: 20px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    height: 340px;
+    max-height: 340px;
+    overflow: hidden;
+  }
+  .term-line { display: block; }
+  .term-prompt { color: var(--accent); }
+  .term-cmd { color: var(--fg); }
+  .term-com { color: var(--fg-muted); }
+  .term-ok { color: var(--good); }
+  .term-warn { color: var(--accent); }
+  .term-key { color: var(--accent-2); }
+  .term-cursor {
+    display: inline-block; width: 8px; height: 16px;
+    background: var(--accent);
+    vertical-align: -2px;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ---- section ---- */
+  section { padding: 88px 0; border-top: 1px solid var(--line); }
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 48px; }
+  .sec-num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent); font-size: 13px; letter-spacing: 0.04em;
+  }
+  .sec-title {
+    font-size: clamp(28px, 3.2vw, 40px);
+    letter-spacing: -0.02em; font-weight: 600;
+    margin: 0;
+  }
+  .sec-sub { color: var(--fg-muted); font-size: 14px; margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+  @media (max-width: 720px) { .sec-sub { display: none; } }
+
+  /* ---- agents ---- */
+  .agents { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .agents.agents-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1100px) { .agents.agents-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 720px) { .agents, .agents.agents-3 { grid-template-columns: 1fr; } }
+
+  .agent {
+    position: relative;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    transition: border-color .25s, transform .25s;
+    overflow: hidden;
+  }
+  .agent:hover { border-color: var(--line-2); transform: translateY(-2px); }
+  .agent::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--agent-color, var(--accent)), transparent);
+  }
+  .agent-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .agent-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--fg-muted);
+  }
+  .agent-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--agent-color, var(--accent)) 15%, transparent);
+    color: var(--agent-color, var(--accent));
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .agent-status .d { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .agent-name {
+    font-size: 28px; font-weight: 600; letter-spacing: -0.02em;
+    margin: 0 0 6px;
+  }
+  .agent-role { color: var(--fg-dim); font-size: 14px; margin-bottom: 20px; }
+  .agent-glyph {
+    width: 56px; height: 56px;
+    border-radius: 12px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    display: grid; place-items: center;
+    color: var(--agent-color, var(--accent));
+    margin-bottom: 18px;
+  }
+  .agent-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .agent-list li {
+    display: flex; gap: 12px; font-size: 14px; color: var(--fg-dim);
+    padding-left: 0;
+  }
+  .agent-list .k {
+    color: var(--agent-color, var(--accent));
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    min-width: 64px;
+    padding-top: 1px;
+  }
+  .agent-meta {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--fg-dim);
+  }
+
+  /* ---- flow diagram ---- */
+  .flow-wrap {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .flow-legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .flow-legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend-bar { width: 20px; height: 2px; }
+
+  .flow-svg { width: 100%; height: auto; display: block; }
+  .flow-svg .node-bg { fill: var(--bg-3); stroke: var(--line); stroke-width: 1; }
+  .flow-svg .node-bg.user { fill: var(--bg-3); stroke: var(--fg-dim); }
+  .flow-svg .node-bg.orch { fill: color-mix(in oklab, var(--accent) 12%, var(--bg-3)); stroke: var(--accent); }
+  .flow-svg .node-bg.openclaw { fill: color-mix(in oklab, var(--accent-2) 12%, var(--bg-3)); stroke: var(--accent-2); }
+  .flow-svg .node-bg.hermes { fill: color-mix(in oklab, var(--good) 10%, var(--bg-3)); stroke: var(--good); }
+  .flow-svg text { fill: var(--fg); font-family: 'Inter', sans-serif; }
+  .flow-svg .label { font-size: 13px; font-weight: 600; }
+  .flow-svg .sub { font-size: 11px; fill: var(--fg-muted); font-family: 'JetBrains Mono', monospace; }
+  .flow-svg .edge { fill: none; stroke: var(--line-2); stroke-width: 1.5; }
+  .flow-svg .edge-label { font-size: 10px; fill: var(--fg-muted); font-family: 'JetBrains Mono', monospace; }
+  .flow-svg .pulse {
+    fill: var(--accent);
+    animation: dash 3s linear infinite;
+  }
+  @keyframes dash {
+    from { stroke-dashoffset: 100; }
+    to { stroke-dashoffset: 0; }
+  }
+  .flow-svg .flow-edges path {
+    stroke-dasharray: 8 10;
+    stroke-linecap: round;
+    animation: travel 1.6s linear infinite;
+  }
+  .flow-svg .flow-edges path:nth-of-type(3n + 2) { animation-delay: .2s; }
+  .flow-svg .flow-edges path:nth-of-type(3n + 3) { animation-delay: .4s; }
+  @keyframes travel {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -36; }
+  }
+
+  /* ---- timeline ---- */
+  .tl { display: flex; flex-direction: column; gap: 0; border-left: 1px dashed var(--line); padding-left: 24px; margin-left: 8px; }
+  .tl-item { padding: 16px 0; position: relative; }
+  .tl-item::before {
+    content: "";
+    position: absolute;
+    left: -30px; top: 22px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+  }
+  .tl-time {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--fg-muted); font-size: 12px;
+  }
+  .tl-title { font-size: 17px; font-weight: 600; margin: 4px 0 4px; }
+  .tl-desc { color: var(--fg-dim); font-size: 14px; }
+
+  /* ---- contact ---- */
+  .contact {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .contact { grid-template-columns: 1fr; padding: 32px; } }
+  .contact h3 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; font-weight: 600; }
+  .contact p { margin: 0; color: var(--fg-dim); }
+  .contact-links { display: flex; flex-direction: column; gap: 12px; align-items: stretch; min-width: 320px; }
+  .email-row {
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--bg-3); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden;
+    transition: border-color .2s;
+  }
+  .email-row:focus-within { border-color: var(--accent); }
+  .email-input {
+    flex: 1; min-width: 0;
+    background: transparent; border: 0; outline: none;
+    padding: 12px 14px; color: var(--fg); font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0 14px; cursor: pointer;
+    background: transparent; border: 0;
+    border-left: 1px solid var(--line);
+    color: var(--fg-dim); font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color .15s, background .15s;
+  }
+  .copy-btn:hover { color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, transparent); }
+  .copy-btn.copied { color: var(--good); }
+  .gh-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 12px 18px; border-radius: 10px;
+    background: var(--bg-3); border: 1px solid var(--line);
+    color: var(--fg); text-decoration: none;
+    font-size: 13px; font-family: 'JetBrains Mono', monospace;
+    transition: border-color .2s, transform .15s, background .2s;
+  }
+  .gh-btn:hover { border-color: var(--accent); transform: translateY(-1px); background: color-mix(in oklab, var(--accent) 6%, var(--bg-3)); }
+  .clink {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 18px; border-radius: 10px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: border-color .2s, transform .15s;
+  }
+  .clink:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .clink.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+  footer {
+    padding: 32px 0 48px;
+    border-top: 1px solid var(--line);
+    color: var(--fg-muted);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+
+  /* ---- background grid ---- */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+    opacity: 0.25;
+    mask-image: radial-gradient(ellipse at top, rgba(0,0,0,0.6), transparent 70%);
+  }
+
+  /* ---- two-col ---- */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+  @media (max-width: 960px) { .two-col { grid-template-columns: 1fr; gap: 32px; } }
+  .lede2 { color: var(--fg-dim); font-size: 16px; }
+  .lede2 strong { color: var(--fg); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<nav class="nav">
+  <div class="shell nav-inner">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="mono">~/<span id="brand-handle">jumpis</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="#about">about</a>
+      <a href="#journey">journey</a>
+      <a href="#agents">workflows</a>
+      <a href="#flow">flow</a>
+      <a class="nav-cta" href="#contact">Get in touch</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="shell hero-grid">
+    <div>
+      <p class="hero-q">
+        한 명의 개발자가<br/>
+        <span class="strike">코드를 쓰는 시대</span> 다음,<br/>
+        누가 프로덕트를 만드는가?
+      </p>
+      <div class="hero-a">
+        <div class="hero-a-label">— a.</div>
+        <div class="hero-a-body">
+          오래전 자기 업무를 봇에 맡긴 한 개발자의 뉴스를 본 뒤로, 저는 이 질문에 매달려 왔습니다.
+          지금은 <strong>openclaw</strong>·<strong>hermes</strong> 같은 오픈소스 에이전트를 엮어,
+          개발과 프로덕트 운영을 한 사람이 운영할 수 있는 형태로 재설계합니다.
+        </div>
+      </div>
+    </div>
+    <div class="term" id="terminal">
+      <div class="term-bar">
+        <div class="term-dot" style="background:#ff5f57"></div>
+        <div class="term-dot" style="background:#febc2e"></div>
+        <div class="term-dot" style="background:#28c840"></div>
+        <div class="term-title">jumpis/project</div>
+      </div>
+      <div class="term-body" id="term-body"></div>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+  <section id="about">
+    <div class="sec-head">
+      <span class="sec-num mono">01 /</span>
+      <h2 class="sec-title">About</h2>
+      <span class="sec-sub mono">whoami</span>
+    </div>
+    <div class="two-col">
+      <div>
+        <p class="lede2">
+          10년 전, 자신의 업무를 완벽히 자동화해 봇에게 맡기고 몇 년간 출근하지 않았다는
+          한 개발자의 뉴스를 보았습니다. 그 충격은 제게
+          <strong>'나를 온전히 복제한 자동화 봇을 만들겠다'</strong>는 강렬한 목표를 심어주었습니다.
+        </p>
+        <p class="lede2" style="margin-top:16px">
+          그리고 AI로 전자 업무의 상당 부분이 자동화 가능해진 지금, 그 꿈은 현실에 가까워졌습니다.
+          저는 현재 6년 차 개발자로서 '에이전틱(Agentic) 개발 환경'에 깊이 몰입해 있습니다.
+          저의 목표는 단순히 단일 개발 작업을 해내는 것을 넘어, 여러 에이전트를 효율적으로 묶고
+          플로우를 설계해 <strong>프로덕트 운영 전체를 자동화</strong>하는 것입니다.
+          openclaw, hermes 같은 오픈소스 에이전트를
+          워크플로 위에 어떻게 배치할지, 무엇을 자동화하고 무엇을 사람의 손에 남길지
+          결정하는 것이 제 핵심 역할입니다.
+        </p>
+        <p class="lede2" style="margin-top:16px">
+          세상에 등장하는 새로운 기술에 대해 "이런 게 있구나" 하고 지나치지 않습니다.
+          <strong>직접 다뤄보고, 제 워크플로에 연동해 직접 장단점들을 체감</strong>합니다.
+          저는 그 과정 위에서 가장 나은 자동화의 해답을 찾아가는 개발자입니다.
+        </p>
+      </div>
+      <div>
+        <p class="lede2"><strong style="color:var(--accent)">// focus</strong></p>
+        <ul class="agent-list" style="margin-top:8px">
+          <li><span class="k mono">openclaw</span><span>개인·가족용 자동화 — 개별 LLM 프로파일, Netflix 인증코드 자동응답, 가계부, 일일 작업 로그</span></li>
+          <li><span class="k mono">hermes</span><span>다중 인스턴스를 병렬로 띄워 실제 개발 워크플로를 운영 (아래 flow 참고)</span></li>
+          <li><span class="k mono">ops</span><span>사내 헬프데스크 — 티켓을 매뉴얼 대응 / 버그 픽스로 자동 분류 → Jira형 티켓 생성 → 에이전트가 코드 수정까지</span></li>
+          <li><span class="k mono">role</span><span><strong>Fractos</strong>(GPU 스케줄링) · <strong>Fabrix</strong>(이기종 GPU·서버 관리) 개발 리드</span></li>
+          <li><span class="k mono">stack</span><span>TypeScript · React · React Native · Node / Python · Go — Kubernetes 기반 GPU fraction</span></li>
+          <li><span class="k mono">models</span><span>Gemini 3.1 · Gemma 4 (local) · GPT-5.5 · Opus 4.7</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <div class="sec-head">
+      <span class="sec-num mono">02 /</span>
+      <h2 class="sec-title">Journey</h2>
+      <span class="sec-sub mono">git log --reverse</span>
+    </div>
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-time">2026.03 — now</div>
+        <div class="tl-title">Agentic engineer · 메이머스트</div>
+        <div class="tl-desc"><strong style="color:var(--fg)">openclaw</strong> + <strong style="color:var(--fg)">hermes</strong> · Codex · Claude 같은 오픈소스 에이전트를 조합해 다중 에이전트 오케스트레이션을 설계하고, 이를 기반으로 <strong style="color:var(--fg)">Fractos</strong> · <strong style="color:var(--fg)">Fabrix</strong>를 개발 중.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">2025 — 2026.01</div>
+        <div class="tl-title">Core squad frontend lead</div>
+        <div class="tl-desc">talenX 핵심 시스템 프론트엔드 리딩. 코드 리뷰 부담 증가 문제를 <strong style="color:var(--fg)">GitHub Actions 기반 AI 코드 리뷰 시스템</strong>으로 해결하며 자동화의 가능성을 실감했습니다.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">2023 — 2025</div>
+        <div class="tl-title">Squad lead · talenX</div>
+        <div class="tl-desc">talenX 모바일 앱(근태 관리)을 React Native로 신규 개발. 이후 인사 스쿼드 리드로서 React/TypeScript 기반의 대규모 인사 시스템 프론트엔드를 구축하고, Git-flow 전략으로 배포 안정성을 확보했습니다.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">2020 — 2023</div>
+        <div class="tl-title">Frontend engineer · 휴먼컨설팅그룹</div>
+        <div class="tl-desc">Performance Plus 평가 폼 컴포넌트 전담 개발 → React Native 앱 출시 → 360도 피드백 기능 개발. 고객사별 커스터마이징 프로젝트를 수행했습니다.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-time">2017 — 2018</div>
+        <div class="tl-title">QA · Korea Contents Platform</div>
+        <div class="tl-desc">방송 서비스 플랫폼의 멀티 디바이스(iOS · Android · Roku · Chromecast) QA. 해외 파트너사(Kaltura · Streamlyzer)와 영어로 CDN 이슈를 조율했습니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="agents">
+    <div class="sec-head">
+      <span class="sec-num mono">03 /</span>
+      <h2 class="sec-title">Workflows I built</h2>
+      <span class="sec-sub mono">ls ./workflows</span>
+    </div>
+
+    <div class="agents agents-3">
+
+      <article class="agent" style="--agent-color: var(--good);">
+        <div class="agent-head">
+          <span class="agent-id mono">workflow_01 · dev</span>
+          <span class="agent-status"><span class="d"></span>active</span>
+        </div>
+        <div class="agent-glyph" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/>
+            <path d="M8 6h4l4 6"/><path d="M8 18h4l4-6"/>
+          </svg>
+        </div>
+        <h3 class="agent-name">Dev orchestration</h3>
+        <div class="agent-role">병렬 개발 워크플로 — hermes 기반</div>
+        <ul class="agent-list">
+          <li><span class="k mono">fan-out</span><span>다중 hermes 인스턴스를 git worktree에 분기</span></li>
+          <li><span class="k mono">flow</span><span>인텐트 → 작업 분해 → 병렬 구현 → 테스트 → 리뷰 게이트</span></li>
+          <li><span class="k mono">scope</span><span>한 줄짜리 인텐트에서 PR까지 한 번에</span></li>
+          <li><span class="k mono">human</span><span>리뷰 게이트는 사람 손에 — 자동화는 그 직전까지</span></li>
+        </ul>
+        <div class="agent-meta">
+          <span class="chip">hermes</span>
+          <span class="chip">parallel-N</span>
+          <span class="chip">human-in-loop</span>
+        </div>
+      </article>
+
+      <article class="agent" style="--agent-color: var(--accent);">
+        <div class="agent-head">
+          <span class="agent-id mono">workflow_02 · ops</span>
+          <span class="agent-status"><span class="d"></span>building</span>
+        </div>
+        <div class="agent-glyph" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="4" rx="1"/>
+            <rect x="3" y="11" width="18" height="4" rx="1"/>
+            <rect x="3" y="17" width="18" height="4" rx="1"/>
+            <circle cx="7" cy="7" r=".8" fill="currentColor"/>
+            <circle cx="7" cy="13" r=".8" fill="currentColor"/>
+          </svg>
+        </div>
+        <h3 class="agent-name">Helpdesk → bugfix</h3>
+        <div class="agent-role">사내 운영 자동화 — 구축 중</div>
+        <ul class="agent-list">
+          <li><span class="k mono">intake</span><span>사용자가 헬프데스크에 올린 티켓을 수집</span></li>
+          <li><span class="k mono">triage</span><span>매뉴얼 대응 / 코드 버그로 자동 분류</span></li>
+          <li><span class="k mono">ticket</span><span>Jira 형태의 작업 티켓을 자동 생성</span></li>
+          <li><span class="k mono">fix</span><span>버그면 에이전트에게 연결, 코드 수정까지 진행</span></li>
+        </ul>
+        <div class="agent-meta">
+          <span class="chip">helpdesk</span>
+          <span class="chip">end-to-end</span>
+        </div>
+      </article>
+
+      <article class="agent" style="--agent-color: var(--accent-2);">
+        <div class="agent-head">
+          <span class="agent-id mono">workflow_03 · personal</span>
+          <span class="agent-status"><span class="d"></span>daily</span>
+        </div>
+        <div class="agent-glyph" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h7v7H4z"/><path d="M13 13h7v7h-7z"/><path d="M13 4h7v7h-7z"/><path d="M4 13h7v7H4z"/>
+          </svg>
+        </div>
+        <h3 class="agent-name">Personal stack</h3>
+        <div class="agent-role">하루 단위 자동화 — openclaw 기반</div>
+        <ul class="agent-list">
+          <li><span class="k mono">family</span><span>가족·지인이 LLM을 친근하게 쓰도록 개별 프로파일 제공</span></li>
+          <li><span class="k mono">netflix</span><span>인증코드 메일이 오면 자동으로 확인·답장</span></li>
+          <li><span class="k mono">finance</span><span>가계부 자동 기록</span></li>
+          <li><span class="k mono">log</span><span>매일 어떤 작업을 했는지 기록하는 자동화 툴</span></li>
+        </ul>
+        <div class="agent-meta">
+          <span class="chip">openclaw</span>
+          <span class="chip">always-on</span>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="flow">
+    <div class="sec-head">
+      <span class="sec-num mono">04 /</span>
+      <h2 class="sec-title">Orchestration flow</h2>
+      <span class="sec-sub mono">how it runs</span>
+    </div>
+
+    <div class="flow-wrap">
+      <div class="flow-legend">
+        <span><span class="legend-bar" style="background:var(--fg-dim)"></span>Jumpis (human)</span>
+        <span><span class="legend-bar" style="background:#f5b041"></span>Codex PM</span>
+        <span><span class="legend-bar" style="background:#52c97b"></span>Codex Dev</span>
+        <span><span class="legend-bar" style="background:#b07ce8"></span>Claude Review</span>
+        <span><span class="legend-bar" style="background:#5ac8e0"></span>Admin (Jumpis Clone)</span>
+        <span><span class="legend-bar" style="background:#e87a8a"></span>Safety / approval</span>
+        <span><span class="legend-bar" style="background:#8a8eb5"></span>Artifacts</span>
+      </div>
+
+      <svg class="flow-svg" viewBox="0 0 1280 880" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--line-2)"/></marker>
+          <marker id="ar-pm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#f5b041"/></marker>
+          <marker id="ar-dev" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#52c97b"/></marker>
+          <marker id="ar-review" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#b07ce8"/></marker>
+          <marker id="ar-admin" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#5ac8e0"/></marker>
+          <marker id="ar-rose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#e87a8a"/></marker>
+        </defs>
+
+        <!-- lane backgrounds -->
+        <rect x="0" y="40" width="1280" height="140" fill="var(--bg-3)" opacity="0.55"/>
+        <rect x="0" y="180" width="1280" height="270" fill="var(--bg-2)" opacity="0.4"/>
+        <rect x="0" y="450" width="1280" height="270" fill="var(--bg-3)" opacity="0.55"/>
+        <rect x="0" y="720" width="1280" height="160" fill="var(--bg-2)" opacity="0.4"/>
+        <line x1="0" y1="180" x2="1280" y2="180" stroke="var(--line)" stroke-width="1"/>
+        <line x1="0" y1="450" x2="1280" y2="450" stroke="var(--line)" stroke-width="1"/>
+        <line x1="0" y1="720" x2="1280" y2="720" stroke="var(--line)" stroke-width="1"/>
+        <line x1="160" y1="40" x2="160" y2="880" stroke="var(--line)" stroke-width="1"/>
+
+        <!-- lane labels -->
+        <text x="80" y="100" text-anchor="middle" class="sub" style="letter-spacing:0.08em;font-weight:600">USER /</text>
+        <text x="80" y="118" text-anchor="middle" class="sub">COMMAND</text>
+        <text x="80" y="305" text-anchor="middle" class="sub" style="letter-spacing:0.08em;font-weight:600">PRODUCT</text>
+        <text x="80" y="323" text-anchor="middle" class="sub">DEVELOPMENT</text>
+        <text x="80" y="575" text-anchor="middle" class="sub" style="letter-spacing:0.08em;font-weight:600">ADMIN /</text>
+        <text x="80" y="593" text-anchor="middle" class="sub">BOT OPS</text>
+        <text x="80" y="800" text-anchor="middle" class="sub" style="letter-spacing:0.08em;font-weight:600">ARTIFACTS</text>
+        <text x="80" y="818" text-anchor="middle" class="sub">EVIDENCE</text>
+
+        <!-- lane 1: Jumpis + Final report -->
+        <g>
+          <rect x="200" y="80" width="160" height="60" rx="14" fill="var(--bg-3)" stroke="var(--fg-dim)" stroke-width="1.5"/>
+          <text class="label" x="280" y="106" text-anchor="middle">Jumpis</text>
+          <text class="sub" x="280" y="124" text-anchor="middle">human · operator</text>
+
+          <rect x="1080" y="80" width="160" height="60" rx="14" fill="var(--bg-3)" stroke="#b07ce8" stroke-width="1.5"/>
+          <text class="label" x="1160" y="104" text-anchor="middle">Final report</text>
+          <text class="sub" x="1160" y="122" text-anchor="middle">summary · diff · risk</text>
+        </g>
+
+        <!-- lane 2: Product Development -->
+        <g>
+          <rect x="200" y="270" width="170" height="80" rx="12" fill="rgba(245,176,65,0.12)" stroke="#f5b041" stroke-width="1.5"/>
+          <text class="label" x="285" y="296" text-anchor="middle">Codex PM</text>
+          <text class="sub" x="285" y="314" text-anchor="middle">requirements · plan</text>
+          <text class="sub" x="285" y="330" text-anchor="middle">PRD · acceptance</text>
+
+          <rect x="420" y="270" width="170" height="80" rx="12" fill="rgba(82,201,123,0.12)" stroke="#52c97b" stroke-width="1.5"/>
+          <text class="label" x="505" y="296" text-anchor="middle">Codex Dev</text>
+          <text class="sub" x="505" y="314" text-anchor="middle">implement · test</text>
+          <text class="sub" x="505" y="330" text-anchor="middle">debug · diff</text>
+
+          <polygon points="650,310 720,270 790,310 720,350" fill="rgba(232,122,138,0.10)" stroke="#e87a8a" stroke-width="1.5"/>
+          <text class="sub" x="720" y="306" text-anchor="middle" style="fill:#e87a8a;font-weight:600">tests</text>
+          <text class="sub" x="720" y="320" text-anchor="middle" style="fill:#e87a8a;font-weight:600">pass?</text>
+
+          <rect x="840" y="270" width="170" height="80" rx="12" fill="rgba(176,124,232,0.12)" stroke="#b07ce8" stroke-width="1.5"/>
+          <text class="label" x="925" y="296" text-anchor="middle">Claude Review</text>
+          <text class="sub" x="925" y="314" text-anchor="middle">correctness · sec</text>
+          <text class="sub" x="925" y="330" text-anchor="middle">maintain · edge</text>
+
+          <polygon points="1060,310 1130,270 1200,310 1130,350" fill="rgba(232,122,138,0.10)" stroke="#e87a8a" stroke-width="1.5"/>
+          <text class="sub" x="1130" y="306" text-anchor="middle" style="fill:#e87a8a;font-weight:600">review</text>
+          <text class="sub" x="1130" y="320" text-anchor="middle" style="fill:#e87a8a;font-weight:600">pass?</text>
+        </g>
+
+        <!-- lane 3: Admin / Bot Ops -->
+        <g>
+          <rect x="200" y="540" width="170" height="80" rx="12" fill="rgba(90,200,224,0.16)" stroke="#5ac8e0" stroke-width="1.5"/>
+          <text class="label" x="285" y="566" text-anchor="middle">Admin</text>
+          <text class="sub" x="285" y="584" text-anchor="middle" style="fill:#5ac8e0">Jumpis Clone</text>
+          <text class="sub" x="285" y="600" text-anchor="middle">bot ops · health</text>
+
+          <rect x="420" y="540" width="170" height="80" rx="12" fill="rgba(90,200,224,0.06)" stroke="#5ac8e0" stroke-width="1"/>
+          <text class="label" x="505" y="566" text-anchor="middle">Inspect</text>
+          <text class="sub" x="505" y="584" text-anchor="middle">profile · config</text>
+          <text class="sub" x="505" y="600" text-anchor="middle">protocol · log</text>
+
+          <polygon points="650,580 720,540 790,580 720,620" fill="rgba(232,122,138,0.10)" stroke="#e87a8a" stroke-width="1.5"/>
+          <text class="sub" x="720" y="576" text-anchor="middle" style="fill:#e87a8a;font-weight:600">issue</text>
+          <text class="sub" x="720" y="590" text-anchor="middle" style="fill:#e87a8a;font-weight:600">found?</text>
+
+          <rect x="840" y="540" width="150" height="80" rx="12" fill="rgba(90,200,224,0.06)" stroke="#5ac8e0" stroke-width="1"/>
+          <text class="label" x="915" y="566" text-anchor="middle">Diagnose</text>
+          <text class="sub" x="915" y="584" text-anchor="middle">routing · gateway</text>
+          <text class="sub" x="915" y="600" text-anchor="middle">ack · timeout</text>
+
+          <polygon points="1020,580 1080,540 1140,580 1080,620" fill="rgba(232,122,138,0.10)" stroke="#e87a8a" stroke-width="1.5"/>
+          <text class="sub" x="1080" y="576" text-anchor="middle" style="fill:#e87a8a;font-weight:600">approval</text>
+          <text class="sub" x="1080" y="590" text-anchor="middle" style="fill:#e87a8a;font-weight:600">needed?</text>
+
+          <rect x="1170" y="540" width="100" height="80" rx="12" fill="rgba(90,200,224,0.16)" stroke="#5ac8e0" stroke-width="1.5"/>
+          <text class="label" x="1220" y="568" text-anchor="middle" style="font-size:12px">Apply</text>
+          <text class="sub" x="1220" y="586" text-anchor="middle">safe action</text>
+          <text class="sub" x="1220" y="602" text-anchor="middle">+ verify</text>
+        </g>
+
+        <!-- lane 4: Artifacts -->
+        <g>
+          <rect x="200" y="760" width="150" height="60" rx="10" fill="rgba(138,142,181,0.10)" stroke="#8a8eb5" stroke-width="1"/>
+          <text class="label" x="275" y="784" text-anchor="middle" style="font-size:12px">app/worktree</text>
+          <text class="sub" x="275" y="802" text-anchor="middle">repo · diff</text>
+
+          <rect x="380" y="760" width="150" height="60" rx="10" fill="rgba(138,142,181,0.10)" stroke="#8a8eb5" stroke-width="1"/>
+          <text class="label" x="455" y="784" text-anchor="middle" style="font-size:12px">test results</text>
+          <text class="sub" x="455" y="802" text-anchor="middle">pass · fail · cov</text>
+
+          <rect x="560" y="760" width="160" height="60" rx="10" fill="rgba(138,142,181,0.10)" stroke="#8a8eb5" stroke-width="1"/>
+          <text class="label" x="640" y="784" text-anchor="middle" style="font-size:12px">review evidence</text>
+          <text class="sub" x="640" y="802" text-anchor="middle">comments · risk</text>
+
+          <rect x="750" y="760" width="160" height="60" rx="10" fill="rgba(138,142,181,0.10)" stroke="#8a8eb5" stroke-width="1"/>
+          <text class="label" x="830" y="784" text-anchor="middle" style="font-size:12px">audit / log</text>
+          <text class="sub" x="830" y="802" text-anchor="middle">admin actions</text>
+
+          <rect x="940" y="760" width="160" height="60" rx="10" fill="rgba(138,142,181,0.10)" stroke="#8a8eb5" stroke-width="1"/>
+          <text class="label" x="1020" y="784" text-anchor="middle" style="font-size:12px">reports</text>
+          <text class="sub" x="1020" y="802" text-anchor="middle">summary · next</text>
+        </g>
+
+        <!-- ===== arrows ===== -->
+        <g class="flow-edges">
+        <!-- Jumpis -> Codex PM (primary dev command) -->
+        <path d="M 285 140 V 270" fill="none" stroke="#f5b041" stroke-width="2.5" marker-end="url(#ar-pm)"/>
+        <text class="edge-label" x="294" y="200" style="fill:#f5b041;font-weight:600">dev command</text>
+
+        <!-- Jumpis -> Admin (ops command, side channel) -->
+        <path d="M 220 140 V 200 Q 220 220 200 220 H 175 V 540 Q 175 540 200 540 H 200" fill="none" stroke="#5ac8e0" stroke-width="1.5" stroke-dasharray="6 5" marker-end="url(#ar-admin)"/>
+        <text class="edge-label" x="178" y="380" style="fill:#5ac8e0">ops command</text>
+
+        <!-- PM -> Dev -->
+        <path d="M 370 310 H 420" fill="none" stroke="#f5b041" stroke-width="1.6" marker-end="url(#ar-pm)"/>
+        <text class="edge-label" x="378" y="304" style="fill:#f5b041">tasks</text>
+
+        <!-- Dev -> tests? -->
+        <path d="M 590 310 H 650" fill="none" stroke="#52c97b" stroke-width="1.6" marker-end="url(#ar-dev)"/>
+
+        <!-- tests? yes -> Claude Review -->
+        <path d="M 790 310 H 840" fill="none" stroke="#52c97b" stroke-width="1.6" marker-end="url(#ar-dev)"/>
+        <text class="edge-label" x="798" y="304" style="fill:#52c97b">pass</text>
+
+        <!-- tests? no -> loop back to Codex Dev -->
+        <path d="M 720 350 V 395 Q 720 410 700 410 H 510 Q 490 410 490 395 V 350" fill="none" stroke="#e87a8a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar-rose)"/>
+        <text class="edge-label" x="595" y="425" style="fill:#e87a8a">fail · debug loop</text>
+
+        <!-- Review -> review? -->
+        <path d="M 1010 310 H 1060" fill="none" stroke="#b07ce8" stroke-width="1.6" marker-end="url(#ar-review)"/>
+
+        <!-- review? yes -> Final report -->
+        <path d="M 1200 310 H 1240 V 200 Q 1240 140 1180 140 H 1240" fill="none" stroke="#b07ce8" stroke-width="2" marker-end="url(#ar-review)"/>
+        <text class="edge-label" x="1208" y="225" style="fill:#b07ce8">pass</text>
+
+        <!-- review? no -> loop back to Codex Dev -->
+        <path d="M 1130 350 V 380 Q 1130 395 1110 395 H 510 Q 490 395 490 380 V 350" fill="none" stroke="#e87a8a" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar-rose)" opacity="0.85"/>
+        <text class="edge-label" x="900" y="412" style="fill:#e87a8a">fail · review loop</text>
+
+        <!-- Final report -> Jumpis (closes loop) -->
+        <path d="M 1080 110 H 360" fill="none" stroke="var(--fg-dim)" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+        <text class="edge-label" x="600" y="103">final summary → Jumpis</text>
+
+        <!-- Admin -> Inspect -->
+        <path d="M 370 580 H 420" fill="none" stroke="#5ac8e0" stroke-width="1.6" marker-end="url(#ar-admin)"/>
+
+        <!-- Inspect -> issue? -->
+        <path d="M 590 580 H 650" fill="none" stroke="#5ac8e0" stroke-width="1.6" marker-end="url(#ar-admin)"/>
+
+        <!-- issue? yes -> Diagnose -->
+        <path d="M 790 580 H 840" fill="none" stroke="#5ac8e0" stroke-width="1.6" marker-end="url(#ar-admin)"/>
+        <text class="edge-label" x="798" y="574" style="fill:#5ac8e0">yes</text>
+
+        <!-- issue? no -> straight down to status report (artifact) -->
+        <path d="M 720 620 V 690 Q 720 710 760 730 V 760" fill="none" stroke="#5ac8e0" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar-admin)"/>
+        <text class="edge-label" x="725" y="660" style="fill:#5ac8e0">no · status</text>
+
+        <!-- Diagnose -> approval? -->
+        <path d="M 990 580 H 1020" fill="none" stroke="#5ac8e0" stroke-width="1.6" marker-end="url(#ar-admin)"/>
+
+        <!-- approval? yes -> ask Jumpis (back up to lane 1) -->
+        <path d="M 1080 540 V 200 Q 1080 160 1040 140 H 360" fill="none" stroke="#e87a8a" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ar-rose)"/>
+        <text class="edge-label" x="850" y="155" style="fill:#e87a8a">ask Jumpis · manual action</text>
+
+        <!-- approval? no -> Apply -->
+        <path d="M 1140 580 H 1170" fill="none" stroke="#5ac8e0" stroke-width="1.6" marker-end="url(#ar-admin)"/>
+        <text class="edge-label" x="1140" y="574" style="fill:#5ac8e0">no</text>
+
+        <!-- Apply -> audit/log artifact -->
+        <path d="M 1220 620 V 700 Q 1220 730 1100 740 H 830 V 760" fill="none" stroke="#5ac8e0" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar-admin)"/>
+
+        <!-- Apply -> reports artifact -->
+        <path d="M 1240 620 V 720 Q 1240 740 1180 750 V 760" fill="none" stroke="#5ac8e0" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar-admin)" opacity="0.85"/>
+
+        <!-- Codex Dev -> worktree + test results (faint drops) -->
+        <path d="M 460 350 V 700 Q 460 730 350 740 V 760" fill="none" stroke="#52c97b" stroke-width="1" stroke-dasharray="3 4" opacity="0.55"/>
+        <path d="M 540 350 V 700 Q 540 730 455 740 V 760" fill="none" stroke="#52c97b" stroke-width="1" stroke-dasharray="3 4" opacity="0.55"/>
+
+        <!-- Claude Review -> review evidence -->
+        <path d="M 925 350 V 720 Q 925 740 720 750 V 760" fill="none" stroke="#b07ce8" stroke-width="1" stroke-dasharray="3 4" opacity="0.55"/>
+        </g>
+      </svg>
+
+      <ol class="agent-list" style="margin-top:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:24px;list-style:none;padding:0">
+        <li style="flex-direction:column;gap:8px">
+          <span class="k mono" style="color:#f5b041">DEV PATH · main</span>
+          <span><strong style="color:var(--fg)">Jumpis → Codex PM → Codex Dev → Claude Review</strong>. PM이 PRD/계획/acceptance를 작성하면 Dev가 구현·테스트·디버깅하고, Claude가 정합성·보안·엣지 케이스를 본다. 테스트나 리뷰가 떨어지면 fix loop로 Dev에게 되돌아가고, 통과하면 Jumpis에게 최종 요약을 올린다.</span>
+        </li>
+        <li style="flex-direction:column;gap:8px">
+          <span class="k mono" style="color:#5ac8e0">OPS PATH · side</span>
+          <span><strong style="color:var(--fg)">Jumpis → Admin (Jumpis Clone)</strong>. Admin은 개발 PM이 아니라 봇 운영/진단 레이어다. 프로파일·게이트웨이·로그를 점검하고, 문제가 보이면 진단·승인 게이트를 거쳐 안전한 변경만 적용한 뒤 Jumpis에게 짧은 summary와 next action을 돌려준다.</span>
+        </li>
+      </ol>
+    </div>
+
+  </section>
+
+  <section id="contact">
+    <div class="sec-head">
+      <span class="sec-num mono">05 /</span>
+      <h2 class="sec-title">Get in touch</h2>
+      <span class="sec-sub mono">curl mailto:</span>
+    </div>
+    <div class="contact">
+      <div>
+        <h3>에이전트, 함께 이야기할까요?</h3>
+        <p>비슷한 관심을 가진 분들과 정보를 나누고 싶습니다. 다중 에이전트 워크플로, 자동화 실험, 그냥 잡담까지 모두 환영합니다.</p>
+      </div>
+      <div class="contact-links">
+        <div class="email-row">
+          <input class="email-input mono" id="email-input" type="text" value="leejonghyeon0106@gmail.com" readonly />
+          <button class="copy-btn" id="copy-btn" type="button" aria-label="Copy email">
+            <svg id="copy-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="copy-label">Copy</span>
+          </button>
+        </div>
+        <a class="gh-btn" href="https://github.com/Jumpis" target="_blank" rel="noopener" id="link-gh">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.16-.02-2.11-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.16 1.18a10.97 10.97 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.67.8.55C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5Z"/></svg>
+          <span>github.com/Jumpis</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>© <span id="yr"></span> Jumpis · Frontend · Agentic engineer</span>
+    <span class="mono">Seoul, KR</span>
+  </footer>
+
+</main>
+
+<script>
+  // year
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ---- terminal typing animation ----
+  (function(){
+    const body = document.getElementById('term-body');
+    const lines = [
+      ['p', '$ ', 'cmd', 'orchestrator run --intent "add SSO + audit log to admin"'],
+      ['com', '[12:04:08] codex-pm    · reading repo · drafting PRD', null, null],
+      ['ok', '   ✓ ', 'fg', 'PRD written  acceptance=7  estimate=M'],
+      ['com', '[12:04:31] codex-dev   · worktree=feat/sso-audit', null, null],
+      ['com', '           · packages/admin, packages/auth, packages/audit', null, null],
+      ['ok', '   ✓ ', 'fg', 'implement · 14 files · +612 −2811 1.42s'],
+      ['ok', '   ✓ ', 'fg', 'pnpm test  · 87 passed · 0 failed · 4.2s'],
+      ['com', '[12:06:02] claude-rev  · review pass 1/2', null, null],
+      ['warn', '   ! ', 'fg', 'risk: token rotation not covered → send back to dev'],
+      ['com', '[12:06:48] codex-dev   · fix loop · add rotation tests', null, null],
+      ['ok', '   ✓ ', 'fg', 'pnpm test  · 91 passed · 0 failed · 4.5s'],
+      ['ok', '   ✓ ', 'fg', 'review pass 2/2  · approved'],
+      ['ok', '✓ ', 'fg', 'final report → ./reports/2026-05-10_sso-audit.md'],
+      ['p', '$ ', 'cmd', '_'],
+    ];
+    let li = 0, ci = 0;
+    let curEl = null;
+    function step() {
+      if (li >= lines.length) {
+        // restart loop after pause
+        setTimeout(() => { body.innerHTML = ''; li = 0; ci = 0; step(); }, 6000);
+        return;
+      }
+      const [kind, prefix, cmdKind, rest] = lines[li];
+      if (!curEl) {
+        curEl = document.createElement('span');
+        curEl.className = 'term-line';
+        const pfx = document.createElement('span');
+        pfx.className = kind === 'p' ? 'term-prompt' : kind === 'ok' ? 'term-ok' : kind === 'warn' ? 'term-warn' : 'term-com';
+        pfx.textContent = prefix || '';
+        curEl.appendChild(pfx);
+        if (rest) {
+          const span = document.createElement('span');
+          span.className = cmdKind === 'cmd' ? 'term-cmd' : 'term-com';
+          curEl.appendChild(span);
+          curEl._target = rest;
+          curEl._span = span;
+        } else {
+          curEl._target = '';
+        }
+        body.appendChild(curEl);
+      }
+      const target = curEl._target;
+      if (target && ci < target.length) {
+        curEl._span.textContent += target[ci++];
+        setTimeout(step, 18 + Math.random()*30);
+      } else {
+        body.appendChild(document.createElement('br'));
+        curEl = null; ci = 0; li++;
+        setTimeout(step, kind === 'com' ? 350 : 240);
+      }
+      // autoscroll
+      body.scrollTop = body.scrollHeight;
+    }
+    setTimeout(step, 600);
+  })();
+
+  // copy email button
+  (function(){
+    const btn = document.getElementById('copy-btn');
+    const input = document.getElementById('email-input');
+    const label = document.getElementById('copy-label');
+    if (!btn || !input || !label) return;
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(input.value);
+      } catch {
+        input.select();
+        document.execCommand && document.execCommand('copy');
+      }
+      btn.classList.add('copied');
+      label.textContent = 'Copied';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        label.textContent = 'Copy';
+      }, 1600);
+    });
+    input.addEventListener('click', () => input.select());
+  })();
+
+  // smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 60, behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
